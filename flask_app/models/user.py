@@ -4,7 +4,6 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 from flask import flash
 
 class User:
-    db = "login_and_register"
     def __init__(self,data):
         self.id = data['id']
         self.first_name = data['first_name']
@@ -17,53 +16,53 @@ class User:
 
     @classmethod
     def save(cls,data):
-        query = "INSERT INTO users (first_name, last_name, email, birthday, password) VALUES (%(first_name)s, %(last_name)s, %(email)s,%(birthday)s, %(password)s;"
-        return connectToMySQL(cls.db).query_db(query, data)
+        query = "INSERT INTO user (first_name, last_name, email, birthday, password) VALUES (%(first_name)s, %(last_name)s, %(email)s,%(birthday)s, %(password)s;"
+        result = connectToMySQL("login_and_register").query_db(query, data)
+        return result
 
     @classmethod 
     def get_all(cls,data):
-        query = "SELECT * FROM users;"
-        results = connectToMySQL(cls.db).query_db(query, data)
-        users = []
+        query = "SELECT * FROM user;"
+        results = connectToMySQL("login_and_register").query_db(query, data)
+        user = []
         for x in results:
-            users.append(cls(x))
-        return users
+            user.append(cls(x))
+        return user
 
     @classmethod
     def get_by_id(cls,data):
-        query = "SELECT * FROM users WHERE id = %(id)s;"
-        results = connectToMySQL(cls.db).query_db(query,data)
+        query = "SELECT * FROM user WHERE id = %(id)s;"
+        results = connectToMySQL("login_and_register").query_db(query,data)
         return cls(results[0])
 
 
     @classmethod
     def get_by_email(cls,data):
-        query = "SELECT * FROM users WHERE email = %(email)s;"
-        results = connectToMySQL(cls.db).query_db(query,data)
+        query = "SELECT * FROM user WHERE email = %(email)s;"
+        results = connectToMySQL("login_and_register").query_db(query,data)
         if len(results) < 1:
             return False
         return cls(results[0])
 
     @staticmethod
-    def validate(user):
+    def validate(data):
         is_valid = True
-        query = "SELECT * FROM users WHERE email = %(email)s;"
-        results = connectToMySQL(User.db).query_db(query,user)
-        if len(results) >= 1:
-            flash("Email already registered.")
+        query = "SELECT * FROM user WHERE email = %(email)s;"
+        results = connectToMySQL("login_and_register").query_db(query,data)
+        if len(results) >=1:
+            flash("Email already taken", "register")
+        if len(data['first_name']) < 3:
+            flash("First name must be at least 3 chars.","register")
             is_valid = False
-        if not EMAIL_REGEX.match(user['email']):
-            flash("Invalid Email.")
+        if len(data['last_name']) < 3:
+            flash("Last name must be at least 3 chars.","register")
             is_valid = False
-        if len(user['first_name']) < 3:
-            flash("First name must be at least 3 chars.")
-            is_valid = False
-        if len(user['last_name']) < 3:
-            flash("Last name must be at least 3 chars.")
-            is_valid = False
-        if len(user['password']) < 5:
-            flash("Password must be at least 5 chars.")
+        if len(data['password']) < 5:
+            flash("Password must be at least 5 chars.","register")
             is_valid= False
-        if user['password'] != user['confirm']:
-            flash("Invalid Password. Please try again.")
+        if data['password'] != data['confirm']:
+            flash("Invalid Password. Please try again.","register")
+        if not EMAIL_REGEX.match(data['email']):
+            flash("Invalid Email.","register")
+            is_valid = False
         return is_valid

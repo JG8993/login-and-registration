@@ -9,16 +9,14 @@ class User:
         self.first_name = data['first_name']
         self.last_name = data['last_name']
         self.email = data['email']
-        self.birthday = data['birthday']
         self.password = data['password']
         self.created_at = data['created_at']
         self.updated_at = data['updated_at']
 
     @classmethod
     def save(cls,data):
-        query = "INSERT INTO user (first_name, last_name, email, birthday, password) VALUES (%(first_name)s, %(last_name)s, %(email)s,%(birthday)s, %(password)s;"
-        result = connectToMySQL("login_and_register").query_db(query, data)
-        return result
+        query = "INSERT INTO user (first_name,last_name,email,password) VALUES(%(first_name)s,%(last_name)s,%(email)s,%(password)s)"
+        return connectToMySQL("login_and_register").query_db(query,data)
 
     @classmethod 
     def get_all(cls,data):
@@ -29,13 +27,7 @@ class User:
             user.append(cls(x))
         return user
 
-    @classmethod
-    def get_by_id(cls,data):
-        query = "SELECT * FROM user WHERE id = %(id)s;"
-        results = connectToMySQL("login_and_register").query_db(query,data)
-        return cls(results[0])
-
-
+    
     @classmethod
     def get_by_email(cls,data):
         query = "SELECT * FROM user WHERE email = %(email)s;"
@@ -43,6 +35,14 @@ class User:
         if len(results) < 1:
             return False
         return cls(results[0])
+
+    @classmethod
+    def get_by_id(cls,data):
+        query = "SELECT * FROM user WHERE id = %(id)s;"
+        results = connectToMySQL("login_and_register").query_db(query,data)
+        return cls(results[0])
+
+
 
     @staticmethod
     def validate(data):
